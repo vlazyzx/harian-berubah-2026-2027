@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Tracker — Grind Mode</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="min-h-screen bg-[#0a0a0f] text-white">
+
+  <!-- Scanline overlay -->
+  <div class="scanlines"></div>
+
+  <!-- Grid BG -->
+  <div class="grid-bg"></div>
+
+  <div class="relative z-10 max-w-3xl mx-auto px-3 py-5">
+
+    <!-- HEADER -->
+    <header class="mb-6">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <p class="text-xs font-mono text-neon-green tracking-[0.3em] uppercase mb-1">// system active</p>
+          <h1 class="text-2xl font-display font-extrabold tracking-tight">
+            GRIND <span class="text-neon-cyan">MODE</span>
+          </h1>
+          <p class="text-xs text-gray-400 font-mono mt-0.5">Daily Habit Tracker — Stay locked in.</p>
+        </div>
+        <div class="text-right">
+          <div id="current-date" class="text-base font-mono font-bold text-neon-cyan"></div>
+          <div id="current-time" class="text-xs font-mono text-gray-400 mt-0.5"></div>
+          <div id="streak-badge" class="inline-block mt-2 px-3 py-1 rounded border border-neon-green text-neon-green text-xs font-mono">
+            🔥 STREAK: <span id="streak-count">0</span> DAYS
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="mt-4">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs font-mono text-gray-400">DAILY PROGRESS</span>
+          <span id="progress-text" class="text-xs font-mono text-neon-green">0/8 COMPLETED</span>
+        </div>
+        <div class="w-full h-2 bg-[#1a1a2e] rounded-full overflow-hidden">
+          <div id="progress-bar" class="h-full bg-gradient-to-r from-neon-green to-neon-cyan rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
+        </div>
+        <div id="progress-percent" class="text-right text-xs font-mono text-neon-cyan mt-1">0%</div>
+      </div>
+    </header>
+
+    <!-- MAIN GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <!-- LEFT: Habit Checklist -->
+      <div class="lg:col-span-2">
+        <div class="panel-card p-4">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-2 h-5 bg-neon-green rounded-full glow-green"></div>
+            <h2 class="font-display font-bold text-base tracking-wide">TODAY'S HABITS</h2>
+          </div>
+
+          <div id="habit-list" class="space-y-2">
+            <!-- Habits injected by JS -->
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-[#1f1f35] flex gap-2">
+            <button id="submit-btn" class="flex-1 py-2 px-4 rounded border border-neon-cyan text-neon-cyan text-xs font-mono hover:bg-neon-cyan hover:text-black transition-all duration-200 font-bold">
+              ✅ SAVE TODAY
+            </button>
+            <button id="reset-btn" class="flex-1 py-2 px-4 rounded border border-[#ff4d6d] text-[#ff4d6d] text-xs font-mono hover:bg-[#ff4d6d] hover:text-black transition-all duration-200">
+              ⚠ RESET TODAY
+            </button>
+          </div>
+
+          <!-- Submit status message -->
+          <div id="submit-status" class="hidden mt-2 text-center text-xs font-mono text-neon-green">
+            ✓ DATA HARI INI BERHASIL DISIMPAN!
+          </div>
+
+          <!-- Unlock countdown -->
+          <div id="unlock-info" class="hidden mt-2 text-center text-xs font-mono text-gray-500">
+            🔓 Unlock dalam: <span id="unlock-countdown" class="text-neon-cyan font-bold">--:--:--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Stats Panel -->
+      <div class="space-y-3">
+
+        <!-- Score Card -->
+        <div class="panel-card p-4">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-2 h-5 bg-neon-cyan rounded-full glow-cyan"></div>
+            <h2 class="font-display font-bold text-sm tracking-wide">TODAY'S SCORE</h2>
+          </div>
+          <div class="text-center py-2">
+            <div id="score-display" class="text-5xl font-display font-extrabold text-neon-cyan score-glow">0%</div>
+            <div id="score-label" class="text-xs font-mono text-gray-400 mt-1">KEEP GOING</div>
+          </div>
+        </div>
+
+        <!-- Donut Chart -->
+        <div class="panel-card p-4">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-2 h-5 bg-[#a855f7] rounded-full" style="box-shadow: 0 0 8px #a855f7"></div>
+            <h2 class="font-display font-bold text-sm tracking-wide">COMPLETION</h2>
+          </div>
+          <div class="flex justify-center">
+            <div class="relative w-24 h-24">
+              <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90">
+                <circle cx="50" cy="50" r="38" fill="none" stroke="#1a1a2e" stroke-width="12"/>
+                <circle id="donut-circle" cx="50" cy="50" r="38" fill="none" stroke="url(#donutGrad)" stroke-width="12"
+                  stroke-dasharray="238.76" stroke-dashoffset="238.76"
+                  stroke-linecap="round" class="transition-all duration-700"/>
+                <defs>
+                  <linearGradient id="donutGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#39ff14"/>
+                    <stop offset="100%" stop-color="#00f0ff"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span id="donut-text" class="text-xl font-mono font-bold text-white">0%</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 flex justify-center gap-4 text-xs font-mono">
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-neon-green inline-block"></span>Done</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#1a1a2e] border border-gray-600 inline-block"></span>Left</span>
+          </div>
+        </div>
+
+        <!-- Bar Chart: 7-Day History -->
+        <div class="panel-card p-4">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-2 h-5 bg-[#f97316] rounded-full" style="box-shadow: 0 0 8px #f97316"></div>
+            <h2 class="font-display font-bold text-sm tracking-wide">7-DAY HISTORY</h2>
+          </div>
+          <div id="bar-chart" class="flex items-end gap-2 h-24 justify-between">
+            <!-- Bars injected by JS -->
+          </div>
+          <div id="bar-labels" class="flex justify-between mt-1 text-[10px] font-mono text-gray-500">
+            <!-- Labels injected by JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SPREADSHEET HISTORY TABLE -->
+    <div class="mt-4 panel-card p-4">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-2 h-5 bg-[#f59e0b] rounded-full" style="box-shadow: 0 0 8px #f59e0b"></div>
+          <h2 class="font-display font-bold text-base tracking-wide">HISTORY LOG</h2>
+        </div>
+        <span class="text-xs font-mono text-gray-500">// last 7 days</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs font-mono">
+          <thead>
+            <tr id="table-header" class="text-left border-b border-[#1f1f35]">
+              <!-- Headers injected by JS -->
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer class="mt-5 text-center text-xs font-mono text-gray-600">
+      // data saved to localStorage — stay locked in, king 👑
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
